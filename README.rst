@@ -70,11 +70,15 @@ If this command does not succeed, please refer to : https://docs.docker.com/comp
 .. _environment-configuration:
 Environment Configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-* For convenience, an example .env file has been included.
+* For convenience, an example .env file has been included. Before you run the app, just do:
+.. code-block:: bash
 
-If you are going to be accessing this app via localhost in the browser, no changes will be needed to the .env file
+   cp env.example .env
 
-This .env file may be modified to fit your environment but is not required
+
+If you are going to be accessing this app via localhost in the browser, the only changes you will need to make will be to include your AWS information
+
+This .env file may be further modified to fit your environment
 
 Build Containers and Run Migrations
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
