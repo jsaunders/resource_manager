@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+
+ {% block content %}
+        <p>This application allows users to lease access to files in an s3 bucket.</p>
+     <p> Upon being granted access, a user can edit these files on their local filesystem. </p>
+     <p>Upon completion of the lease, the file will be persisted to the original s3 bucket with any changes included</p>
+      {% endblock content %}

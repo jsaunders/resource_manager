@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load rest_framework %}
+
+
+{% block content %}
+{% if user.is_authenticated %}
+    <p><h5>Resources available for lease are shown below</h5></p>
+    <p><h5>Please Select the "Book" button in the reserve column for the resource that you would like to lease</h5></p>
+
+    <table class="table">
+    <thead>
+    <tr>
+        <td><h4>Resource Name</h4></td>
+        <td><h4>Available</h4></td>
+        <td><h4>Next Available Time</h4></td>
+        <td><h4>Leased By</h4></td>
+        <td><h4>Reserve</h4></td>
+        </tr></thead>
+    <tbody>
+    {% for resource in resource_list %}
+        <tr>
+        <td>
+            {{ resource.name }}
+        </td>
+            <td>
+                {{ resource.available }}
+            </td>
+            <td>
+                {{ resource.next_time_available }}
+            </td>
+            <td>
+                {{ resource.booked_by }}
+            </td>
+            <td>
+                {% if resource.available %}
+                <button class="btn" data-toggle="modal" data-target="#modal-{{ resource.pk }}">Book</button>
+                {% else %}
+                    <button class="btn disabled">Unavailable</button>
+                {% endif %}
+            </td>
+
+        </tr>
+        <br/>
+    {% endfor %}
+    </tbody>
+    </table>
+       {% for resource in resource_list %}
+    <div class="modal fade" id="modal-{{ resource.pk }}" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title" id="myModalLabel">Lease {{ resource.key }}</h4>
+      </div>
+        <form action="{% url 'lease-resource' resource.pk %}" id="lease-form-{{ resource.pk }}" method="POST">
+      <div class="modal-body">
+          Please Input Duration you wish to lease and click "Save Changes"<br>
+          <br>
+    {% csrf_token %}
+    {% render_form serializer %}
+          Note: Duration is in minutes
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary">Begin Lease</button>
+      </div>
+        </form>
+    </div>
+  </div>
+</div>
+        {% endfor %}
+
+{% else %}
+    <h4>Must be logged in to lease Resources. Please
+    <a href="{% url 'account_signup' %}">Sign Up</a> or
+                  <a href="{% url 'account_login' %}">Sign In</a>
+    </h4>
+
+    {% endif %}
+
+{% endblock %}
+{% block extra_js %}
+    {% for resource in resource_list %}
+        <script type="application/javascript">
+        $("#lease-form-{{ resource.pk }}" ).submit(function(e) {
+
+             $.ajax({
+           type: "POST",
+           url: "{% url 'lease-resource' resource.pk %}",
+                 data: $("#lease-form-{{ resource.pk }}" ).serialize(), // serializes the form's elements.
+           success: function(data)
+           {
+               $("#modal-{{ resource.pk }}").modal('hide');
+               alert("Successfully leased {{ resource.key }} \n"   +
+               "You can find this file at PROJECT_ROOT/shared_resource_folder/{{ resource.key }}.\n "+
+                       "When the lease expires it's changes will be persisted and the local copy removed from your filesystem"); // show response from the php script.
+               location.reload();
+
+           },
+                 error: function(data){
+                     alert(JSON.stringify(data.responseText)); // show response from the php script.
+
+                 }
+         });
+
+                e.preventDefault(); // avoid to execute the actual submit of the form.
+        })
+        </script>
+    {% endfor %}
+{% endblock %}
